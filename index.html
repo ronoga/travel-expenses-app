@@ -178,7 +178,7 @@ font-size: 0.875rem !important;
 </div>
 </header>
 <!-- Login Section - Always shown first -->
-<section id="login-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<section id="login-section" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 <div class="bg-white rounded-xl shadow-lg p-5 max-w-md mx-auto animate-fade-in">
 <h2 class="text-xl font-bold text-gray-800 mb-5 text-center flex items-center justify-center">
 <svg class="h-6 w-6 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -408,7 +408,7 @@ class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:rin
 <p id="total-personal-expenses" class="text-lg font-bold text-orange-600">0 تومان</p>
 </div>
 <div class="bg-purple-100 rounded-lg p-3 text-center border border-purple-200">
-<h3 class="text-xs font-semibold text-gray-800 mb-0.5">هزینه کل سفر</h3>
+<h3 class="text-xs font-semibold text-gray-800 mb-0.5">هزینه کل سفر برای شما</h3>
 <p id="total-travel-expenses" class="text-lg font-bold text-purple-600">0 تومان</p>
 </div>
 <div class="bg-green-100 rounded-lg p-3 text-center border border-green-200">
@@ -473,17 +473,74 @@ let sharedExpenses = [];
 let personalExpenses = [];
 // ========== Initialize the app ==========
 async function initApp() {
-console.log('🚀 Initializing app...');
-if (!initSupabase()) {
-alert('❌ خطای اتصال به دیتابیس. لطفاً دوباره تلاش کنید.');
-return;
-}
-// همیشه اول صفحه لاگین نمایش داده میشه
-document.getElementById('login-section').classList.remove('hidden');
-document.getElementById('main-content').classList.add('hidden');
-document.getElementById('userInfo').classList.add('hidden');
-document.getElementById('floatingBtn').classList.add('hidden');
-console.log('✅ App initialized successfully!');
+  console.log('🚀 Initializing app...');
+
+  // init supabase ابتدا (همان تابعی که از قبل داری)
+  if (!initSupabase()) {
+    alert('❌ خطای اتصال به دیتابیس. لطفاً دوباره تلاش کنید.');
+    return;
+  }
+
+  // 1) پنهان بودن پیش‌فرض: اطمینان می‌دهیم هیچ یک از بخش‌ها (login/main/userInfo/floating) نمایش داده نشوند
+  // (معمولاً login را به hidden گذاشتیم در HTML، اما اینجا هم برای اطمینان)
+  const loginSec = document.getElementById('login-section');
+  const mainContent = document.getElementById('main-content');
+  const userInfo = document.getElementById('userInfo');
+  const floatingBtn = document.getElementById('floatingBtn');
+
+  if (loginSec) loginSec.classList.add('hidden');
+  if (mainContent) mainContent.classList.add('hidden');
+  if (userInfo) userInfo.classList.add('hidden');
+  if (floatingBtn) floatingBtn.classList.add('hidden');
+
+  // 2) تلاش برای بازیابی نشست از localStorage (همان کلید که قبلاً استفاده می‌کنی)
+  const stored = localStorage.getItem('currentUser');
+  if (stored) {
+    try {
+      currentUser = JSON.parse(stored);
+      currentUserId = currentUser?.id || null;
+      console.log('♻️ Restored currentUser from localStorage:', currentUser);
+
+      // اختیاری: سعی کن اطلاعات کاربر را از سرور تازه‌سازی کنی (اگر می‌خواهی)
+      if (currentUserId) {
+        try {
+          const { data: freshUser, error: userErr } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', currentUserId)
+            .single();
+          if (!userErr && freshUser) {
+            currentUser = freshUser;
+            currentUserId = freshUser.id;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          } else {
+            console.warn('Could not refresh user from DB; continuing with stored data.', userErr);
+          }
+        } catch (e) {
+          console.warn('Refresh user failed, continuing with stored data.', e);
+        }
+      }
+
+      // حالا بررسی کن پروفایل کامل هست یا نه -> این تابع در فایل تو موجوده
+      await checkProfileCompletion(); // این در صورت تکمیل بودن، loadMainContent() را صدا می‌زند
+
+      // در صورتی که checkProfileCompletion() پروفایل را کامل کند یا loadMainContent را صدا بزند،
+      // صفحهٔ اصلی نمایش داده خواهد شد؛ بنابراین همینجا RETURN می‌کنیم.
+      return;
+    } catch (err) {
+      console.error('Error restoring session from localStorage:', err);
+      // اگر JSON خراب بود، حذفش کن تا لاگین نشان داده شود پایین
+      localStorage.removeItem('currentUser');
+    }
+  }
+
+  // اگر به اینجا رسیدیم یعنی نشست وجود نداشت یا بازیابی شکست خورد -> نمایش صفحه لاگین
+  if (loginSec) loginSec.classList.remove('hidden');
+  if (mainContent) mainContent.classList.add('hidden');
+  if (userInfo) userInfo.classList.add('hidden');
+  if (floatingBtn) floatingBtn.classList.add('hidden');
+
+  console.log('✅ App initialized: showing login.');
 }
 // ========== Validation Functions ==========
 function validateNationalCode(input) {
@@ -1009,37 +1066,49 @@ alert('❌ خطا در حذف هزینه: ' + error.message);
 }
 // ========== Update Summary ==========
 function updateSummary() {
-const totalShared = sharedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-const totalPersonal = personalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-const totalTravel = totalShared + totalPersonal;
-const totalMembersCount = members.length;
-document.getElementById('total-shared-expenses').textContent = totalShared.toLocaleString() + ' تومان';
-document.getElementById('total-personal-expenses').textContent = totalPersonal.toLocaleString() + ' تومان';
-document.getElementById('total-travel-expenses').textContent = totalTravel.toLocaleString() + ' تومان';
-document.getElementById('total-members').textContent = totalMembersCount + ' نفر';
-// محاسبه میانگین و بدهی‌ها
-let averagePerPerson = 0;
-let youShouldPay = 0;
-let youShouldReceive = 0;
-if (totalMembersCount > 0 && sharedExpenses.length > 0) {
-averagePerPerson = Math.round(totalShared / totalMembersCount);
-const currentUserMember = currentUser.member;
-if (currentUserMember) {
-const currentUserSharedExpenses = sharedExpenses.filter(e => e.member_id === currentUserMember.id);
-const currentUserPaid = currentUserSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
-const difference = currentUserPaid - averagePerPerson;
-if (difference < 0) {
-youShouldPay = Math.abs(difference);
-youShouldReceive = 0;
-} else {
-youShouldPay = 0;
-youShouldReceive = difference;
-}
-}
-}
-document.getElementById('average-per-person').textContent = averagePerPerson.toLocaleString() + ' تومان';
-document.getElementById('you-should-pay').textContent = youShouldPay.toLocaleString() + ' تومان';
-document.getElementById('you-should-receive').textContent = youShouldReceive.toLocaleString() + ' تومان';
+  const totalShared = sharedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalPersonal = personalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalMembersCount = members.length;
+
+  // محاسبه میانگین اشتراکی هر نفر (برای استفاده در total-travel و نمایش میانگین)
+  let averagePerPerson = 0;
+  if (totalMembersCount > 0 && sharedExpenses.length > 0) {
+    averagePerPerson = Math.round(totalShared / totalMembersCount);
+  }
+
+  // هزینه کل سفر برای شما — برای "شما": میانگین اشتراکی هر نفر + هزینه‌های شخصی شما
+  const totalTravelForYou = averagePerPerson + totalPersonal;
+
+  // نمایش مقادیر
+  document.getElementById('total-shared-expenses').textContent = totalShared.toLocaleString() + ' تومان';
+  document.getElementById('total-personal-expenses').textContent = totalPersonal.toLocaleString() + ' تومان';
+  document.getElementById('total-travel-expenses').textContent = totalTravelForYou.toLocaleString() + ' تومان';
+  document.getElementById('total-members').textContent = totalMembersCount + ' نفر';
+
+  // محاسبه میانگین و بدهی‌ها (باقی منطق توی کدت را همین‌جا نگه داشتم)
+  let youShouldPay = 0;
+  let youShouldReceive = 0;
+  if (totalMembersCount > 0 && sharedExpenses.length > 0) {
+    // averagePerPerson همین‌جاست و استفاده می‌شود
+    const currentUserMember = currentUser.member;
+    if (currentUserMember) {
+      const currentUserSharedExpenses = sharedExpenses.filter(e => e.member_id === currentUserMember.id);
+      const currentUserPaid = currentUserSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
+      const difference = currentUserPaid - averagePerPerson;
+      if (difference < 0) {
+        youShouldPay = Math.abs(difference);
+        youShouldReceive = 0;
+      } else {
+        youShouldPay = 0;
+        youShouldReceive = difference;
+      }
+    }
+  }
+
+  document.getElementById('average-per-person').textContent = averagePerPerson.toLocaleString() + ' تومان';
+  document.getElementById('you-should-pay').textContent = youShouldPay.toLocaleString() + ' تومان';
+  document.getElementById('you-should-receive').textContent = youShouldReceive.toLocaleString() + ' تومان';
+
 // Update member details
 const memberDetails = document.getElementById('member-details');
 memberDetails.innerHTML = '';
