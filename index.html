@@ -1,991 +1,1143 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مدیریت هزینه‌های سفر</title>
-    
-	<!-- Favicon -->
-    <link rel="icon" href="travel.ico" type="image/x-icon">
-    <!-- Tailwind CSS v3.x -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- IRANSans Font -->
-    <style>
-        @font-face {
-            font-family: 'IRANSans';
-            src: url('IRANSans-web.woff2') format('woff2');
-            font-weight: normal;
-            font-style: normal;
-        }
-        body {
-            font-family: 'IRANSans', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        .scroll-smooth {
-            scroll-behavior: smooth;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        
-        /* Floating button for mobile */
-        .floating-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(78, 115, 223, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0); }
-        }
-        
-        /* Profile completion modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 1.5rem;
-            max-width: 500px;
-            width: 100%;
-            padding: 2rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 640px) {
-            .text-4xl { font-size: 1.875rem; }
-            .text-3xl { font-size: 1.5rem; }
-            .text-2xl { font-size: 1.25rem; }
-            .text-xl { font-size: 1.125rem; }
-            .px-6 { padding-left: 1rem; padding-right: 1rem; }
-            .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
-            .gap-6 { gap: 1rem; }
-            .mb-8 { margin-bottom: 1rem; }
-            .rounded-xl { border-radius: 0.75rem; }
-            .modal-content { padding: 1.5rem; }
-        }
-    </style>
-    
-    <!-- Supabase JS -->
-     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>مدیریت هزینه‌های سفر</title>
+<!-- Favicon -->
+<link rel="icon" href="travel.ico" type="image/x-icon">
+<!-- Tailwind CSS v3.x -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- IRANSans Font -->
+<style>
+@font-face {
+font-family: 'IRANSans';
+src: url('IRANSans-web.woff2') format('woff2');
+font-weight: normal;
+font-style: normal;
+}
+body {
+font-family: 'IRANSans', sans-serif;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+.hidden {
+display: none;
+}
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+animation: fadeIn 0.3s ease-in-out;
+}
+.scroll-smooth {
+scroll-behavior: smooth;
+}
+/* Custom scrollbar */
+::-webkit-scrollbar {
+width: 6px;
+}
+::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+background: #888;
+border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+background: #555;
+}
+/* Floating button for mobile */
+.floating-btn {
+position: fixed;
+bottom: 20px;
+left: 50%;
+transform: translateX(-50%);
+z-index: 1000;
+box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+animation: pulse 2s infinite;
+}
+@keyframes pulse {
+0% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.7); }
+70% { box-shadow: 0 0 0 10px rgba(78, 115, 223, 0); }
+100% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0); }
+}
+/* Profile completion modal */
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: rgba(0, 0, 0, 0.5);
+z-index: 10000;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 1rem;
+}
+.modal-content {
+background: white;
+border-radius: 1.5rem;
+max-width: 500px;
+width: 100%;
+padding: 2rem;
+box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp {
+from {
+opacity: 0;
+transform: translateY(50px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+/* Edit modal */
+.edit-modal {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: rgba(0, 0, 0, 0.5);
+z-index: 10001;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 1rem;
+}
+.edit-modal-content {
+background: white;
+border-radius: 1rem;
+max-width: 450px;
+width: 100%;
+padding: 1.5rem;
+box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+animation: slideUp 0.3s ease-out;
+}
+/* Compact design adjustments */
+.compact-card {
+border-radius: 1rem !important;
+padding: 1rem !important;
+}
+.compact-section {
+margin-bottom: 1rem !important;
+}
+.compact-input {
+padding: 0.625rem 0.75rem !important;
+font-size: 0.875rem !important;
+}
+.compact-button {
+padding: 0.5rem 1rem !important;
+font-size: 0.875rem !important;
+}
+.compact-text {
+font-size: 0.875rem !important;
+}
+/* Mobile optimizations */
+@media (max-width: 640px) {
+.text-4xl { font-size: 1.875rem; }
+.text-3xl { font-size: 1.5rem; }
+.text-2xl { font-size: 1.25rem; }
+.text-xl { font-size: 1.125rem; }
+.px-6 { padding-left: 1rem; padding-right: 1rem; }
+.py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+.gap-6 { gap: 1rem; }
+.mb-8 { margin-bottom: 1rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.modal-content { padding: 1.5rem; }
+.compact-card { padding: 0.75rem !important; }
+}
+</style>
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen scroll-smooth">
-    <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span class="text-xl font-bold text-gray-800">مدیریت هزینه‌های سفر</span>
-                </div>
-                <div id="userInfo" class="hidden">
-                    <span id="userName" class="text-gray-700 font-semibold"></span>
-                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition text-sm mr-3">
-                        خروج
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Login Section - Always shown first -->
-    <section id="login-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-md mx-auto animate-fade-in">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
-                <svg class="h-7 w-7 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                </svg>
-                ورود به سیستم
-            </h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">کد ملی</label>
-                    <input type="text" id="nationalCode" placeholder="مثال: 0012345678" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                           maxlength="10" oninput="validateNationalCode(this)">
-                    <p id="nationalCodeError" class="text-red-500 text-xs mt-1 hidden">کد ملی باید 10 رقم باشد</p>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">شماره موبایل</label>
-                    <input type="tel" id="phoneNumber" placeholder="مثال: 09123456789" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                           maxlength="11" oninput="validatePhoneNumber(this)">
-                    <p id="phoneNumberError" class="text-red-500 text-xs mt-1 hidden">شماره موبایل باید 11 رقم باشد و با 09 شروع شود</p>
-                </div>
-                
-                <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold text-base">
-                    <svg class="inline-block h-5 w-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                    </svg>
-                    ورود / ثبت‌نام
-                </button>
-                
-                <p class="text-sm text-gray-600 text-center mt-4">
-                    <strong>💡 توضیح:</strong> با ورود، شما به هزینه‌های اشتراکی همه دسترسی دارید، اما هزینه‌های شخصی فقط خودتان را می‌بینید.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Profile Completion Modal (Shown after first login) -->
-    <div id="profileModal" class="hidden modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">تکمیل پروفایل شما 👤</h2>
-            <p class="text-gray-600 mb-6 text-center">لطفاً اطلاعات خود را برای اضافه شدن به گروه وارد کنید</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">نام و نام خانوادگی</label>
-                    <input type="text" id="profileFullName" placeholder="مثال: علی رضایی" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base">
-                </div>
-                
-                <button onclick="completeProfile()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold text-base">
-                    <svg class="inline-block h-5 w-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    تکمیل و ورود به سیستم
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content (Hidden until login and profile completion) -->
-    <main id="main-content" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Members Section - بدون بخش افزودن فرد جدید -->
-        <section id="members" class="mb-8">
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <svg class="h-7 w-7 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    افراد گروه
-                </h2>
-                
-                <div class="bg-green-50 rounded-xl p-5">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">لیست اعضا</h3>
-                    <div id="members-list" class="space-y-3 max-h-96 overflow-y-auto">
-                        <!-- Members will be added here dynamically -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Shared Expenses Section -->
-        <section id="shared-expenses" class="mb-8">
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <svg class="h-7 w-7 text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    هزینه‌های اشتراکی (برای همه قابل مشاهده)
-                </h2>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-green-50 rounded-xl p-5">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">ثبت هزینه اشتراکی جدید</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">انتخاب فرد</label>
-                                <select id="shared-expense-member" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ هزینه (تومان)</label>
-                                <input type="number" id="shared-expense-amount" placeholder="مثال: 150000" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" min="0">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                                <input type="text" id="shared-expense-description" placeholder="مثال: هتل، غذا، بنزین" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base">
-                            </div>
-                            <button onclick="addSharedExpense()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold text-base">
-                                <svg class="inline-block h-5 w-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                ثبت هزینه اشتراکی
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-purple-50 rounded-xl p-5">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">تاریخچه هزینه‌های اشتراکی</h3>
-                        <div id="shared-expenses-list" class="space-y-3 max-h-80 overflow-y-auto">
-                            <!-- Shared expenses will be added here dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Personal Expenses Section -->
-        <section id="personal-expenses" class="mb-8">
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <svg class="h-7 w-7 text-orange-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                    </svg>
-                    هزینه‌های شخصی (فقط خودتان)
-                </h2>
-                <p class="text-sm text-gray-600 mb-4 bg-orange-50 p-3 rounded-lg">
-                    <strong>🔒 حریم خصوصی:</strong> هزینه‌های شخصی فقط برای شما قابل مشاهده است و دیگران نمی‌توانند آن‌ها را ببینند.
-                </p>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-orange-50 rounded-xl p-5">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">ثبت هزینه شخصی جدید</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ هزینه (تومان)</label>
-                                <input type="number" id="personal-expense-amount" placeholder="مثال: 50000" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base" min="0">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                                <input type="text" id="personal-expense-description" placeholder="مثال: هدیه، خرید شخصی" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base">
-                            </div>
-                            <button onclick="addPersonalExpense()" class="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition font-semibold text-base">
-                                <svg class="inline-block h-5 w-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                ثبت هزینه شخصی
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-red-50 rounded-xl p-5">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">تاریخچه هزینه‌های شخصی</h3>
-                        <div id="personal-expenses-list" class="space-y-3 max-h-80 overflow-y-auto">
-                            <!-- Personal expenses will be added here dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Summary Section -->
-        <section id="summary" class="mb-8">
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <svg class="h-7 w-7 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    خلاصه و محاسبات
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-blue-100 rounded-xl p-5 text-center border-2 border-blue-200">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-1">مجموع هزینه‌های اشتراکی</h3>
-                        <p id="total-shared-expenses" class="text-2xl font-bold text-blue-600">0 تومان</p>
-                    </div>
-                    <div class="bg-orange-100 rounded-xl p-5 text-center border-2 border-orange-200">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-1">هزینه‌های شخصی شما</h3>
-                        <p id="total-personal-expenses" class="text-2xl font-bold text-orange-600">0 تومان</p>
-                    </div>
-                    <div class="bg-purple-100 rounded-xl p-5 text-center border-2 border-purple-200">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-1">هزینه کل سفر</h3>
-                        <p id="total-travel-expenses" class="text-2xl font-bold text-purple-600">0 تومان</p>
-                    </div>
-                    <div class="bg-green-100 rounded-xl p-5 text-center border-2 border-green-200">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-1">تعداد افراد</h3>
-                        <p id="total-members" class="text-2xl font-bold text-green-600">0 نفر</p>
-                    </div>
-                </div>
-                
-                <div class="bg-yellow-50 rounded-xl p-5">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">جزئیات هزینه‌های هر فرد</h3>
-                    <div id="member-details" class="space-y-3">
-                        <!-- Member details will be added here dynamically -->
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Floating Action Button for Mobile -->
-    <button onclick="scrollToSection('summary')" class="floating-btn bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-full text-lg font-bold shadow-xl hidden" id="floatingBtn">
-        📊 مشاهده خلاصه
-    </button>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-6 mt-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-gray-400 text-sm">© 2026 مدیریت هزینه‌های سفر. تمامی حقوق محفوظ است.</p>
-            <p class="text-gray-400 text-sm mt-2">طراحی شده با ❤️ با استفاده از Tailwind CSS و Supabase</p>
-        </div>
-    </footer>
-
-    <script>
-        // ========== Supabase Configuration ==========
-        const SUPABASE_URL = 'https://mrjcfehwyzvaojvrkpmd.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_xrBrdAGjo1R-cRtCX07acw_wdVidDMl';
-        
-        // Initialize Supabase Client
-        let supabaseClient = null;
-        let currentUser = null;
-        let currentUserId = null;
-        let isProfileComplete = false;
-
-        function initSupabase() {
-            try {
-                if (typeof supabase === 'undefined') {
-                    console.warn('Supabase library not loaded');
-                    return false;
-                }
-                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase client initialized successfully');
-                return true;
-            } catch (error) {
-                console.error('❌ Error initializing Supabase:', error);
-                return false;
-            }
-        }
-
-        // ========== Data Storage ==========
-        let members = [];
-        let sharedExpenses = [];
-        let personalExpenses = [];
-
-        // ========== Initialize the app ==========
-        async function initApp() {
-            console.log('🚀 Initializing app...');
-            
-            if (!initSupabase()) {
-                alert('❌ خطای اتصال به دیتابیس. لطفاً دوباره تلاش کنید.');
-                return;
-            }
-            
-            // همیشه اول صفحه لاگین نمایش داده میشه
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('main-content').classList.add('hidden');
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('floatingBtn').classList.add('hidden');
-            
-            console.log('✅ App initialized successfully!');
-        }
-
-        // ========== Validation Functions ==========
-        function validateNationalCode(input) {
-            const value = input.value;
-            const errorElement = input.id === 'nationalCode' ? 
-                document.getElementById('nationalCodeError') : 
-                document.getElementById('memberNationalCodeError');
-            
-            if (value.length > 0 && value.length !== 10) {
-                errorElement.classList.remove('hidden');
-                return false;
-            } else {
-                errorElement.classList.add('hidden');
-                return true;
-            }
-        }
-
-        function validatePhoneNumber(input) {
-            const value = input.value;
-            const errorElement = document.getElementById('phoneNumberError');
-            
-            if (value.length > 0 && (value.length !== 11 || !value.startsWith('09'))) {
-                errorElement.classList.remove('hidden');
-                return false;
-            } else {
-                errorElement.classList.add('hidden');
-                return true;
-            }
-        }
-
-        // ========== Check if user profile is complete ==========
-        async function checkProfileCompletion() {
-            try {
-                const { data: memberData, error: memberError } = await supabaseClient
-                    .from('members')
-                    .select('*')
-                    .eq('national_code', currentUser.national_code)
-                    .single();
-
-                if (memberError && memberError.code === 'PGRST116') {
-                    // کاربر در جدول members وجود ندارد - نیاز به تکمیل پروفایل دارد
-                    isProfileComplete = false;
-                    showProfileModal();
-                } else if (memberError) {
-                    throw memberError;
-                } else {
-                    // کاربر در جدول members وجود دارد
-                    isProfileComplete = true;
-                    currentUser.member = memberData;
-                    loadMainContent();
-                }
-                
-            } catch (error) {
-                console.error('Error checking profile completion:', error);
-                alert('❌ خطا در بررسی پروفایل: ' + error.message);
-            }
-        }
-
-        // ========== Show Profile Completion Modal ==========
-        function showProfileModal() {
-            document.getElementById('profileModal').classList.remove('hidden');
-        }
-
-        // ========== Complete Profile ==========
-        async function completeProfile() {
-            const fullName = document.getElementById('profileFullName').value.trim();
-            
-            if (!fullName) {
-                alert('⚠️ لطفاً نام و نام خانوادگی خود را وارد کنید');
-                return;
-            }
-
-            try {
-                // اضافه کردن کاربر به جدول members
-                const { data: memberData, error: memberError } = await supabaseClient
-                    .from('members')
-                    .insert([{ 
-                        name: fullName,
-                        national_code: currentUser.national_code
-                    }])
-                    .select()
-                    .single();
-
-                if (memberError) {
-                    throw memberError;
-                }
-
-                // آپدیت کردن نام کاربر در جدول users
-                await supabaseClient
-                    .from('users')
-                    .update({ name: fullName })
-                    .eq('id', currentUserId);
-
-                currentUser.name = fullName;
-                currentUser.member = memberData;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                isProfileComplete = true;
-                document.getElementById('profileModal').classList.add('hidden');
-                
-                // بارگذاری محتوای اصلی
-                loadMainContent();
-                
-                alert('✅ پروفایل شما با موفقیت تکمیل شد! خوش آمدید.');
-                
-            } catch (error) {
-                console.error('Error completing profile:', error);
-                alert('❌ خطا در تکمیل پروفایل: ' + error.message);
-            }
-        }
-
-        // ========== Load Main Content ==========
-        async function loadMainContent() {
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userInfo').classList.remove('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            document.getElementById('floatingBtn').classList.remove('hidden');
-            document.getElementById('login-section').classList.add('hidden');
-            
-            // بارگذاری داده‌ها
-            await loadMembers();
-            await loadSharedExpenses();
-            await loadPersonalExpenses();
-            updateSummary();
-        }
-
-        // ========== Login Function ==========
-        async function login() {
-            const nationalCode = document.getElementById('nationalCode').value.trim();
-            const phoneNumber = document.getElementById('phoneNumber').value.trim();
-            
-            if (!validateNationalCode({value: nationalCode, id: 'nationalCode'})) {
-                alert('⚠️ کد ملی باید 10 رقم باشد');
-                return;
-            }
-            
-            if (!validatePhoneNumber({value: phoneNumber, id: 'phoneNumber'})) {
-                alert('⚠️ شماره موبایل باید 11 رقم باشد و با 09 شروع شود');
-                return;
-            }
-
-            try {
-                const { data: existingUser, error: fetchError } = await supabaseClient
-                    .from('users')
-                    .select('*')
-                    .eq('national_code', nationalCode)
-                    .eq('phone_number', phoneNumber)
-                    .single();
-
-                if (fetchError && fetchError.code !== 'PGRST116') {
-                    throw fetchError;
-                }
-
-                if (existingUser) {
-                    // کاربر موجود است
-                    currentUser = existingUser;
-                    currentUserId = currentUser.id;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    
-                    // چک کردن تکمیل پروفایل
-                    await checkProfileCompletion();
-                    
-                } else {
-                    // کاربر جدید - ثبت‌نام
-                    const { data: newUser, error: insertError } = await supabaseClient
-                        .from('users')
-                        .insert([{ 
-                            national_code: nationalCode, 
-                            phone_number: phoneNumber,
-                            name: 'کاربر ' + nationalCode.substring(0, 4)
-                        }])
-                        .select()
-                        .single();
-
-                    if (insertError) {
-                        throw insertError;
-                    }
-
-                    currentUser = newUser;
-                    currentUserId = currentUser.id;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    
-                    // چک کردن تکمیل پروفایل (برای کاربر جدید حتماً نیاز به تکمیل دارد)
-                    await checkProfileCompletion();
-                }
-                
-            } catch(error) {
-                console.error('Error in login:', error);
-                alert('❌ خطا در ورود: ' + error.message);
-            }
-        }
-
-        // ========== Logout Function ==========
-        function logout() {
-            currentUser = null;
-            currentUserId = null;
-            isProfileComplete = false;
-            localStorage.removeItem('currentUser');
-            
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('main-content').classList.add('hidden');
-            document.getElementById('floatingBtn').classList.add('hidden');
-            document.getElementById('profileModal').classList.add('hidden');
-            
-            // Clear forms
-            document.getElementById('nationalCode').value = '';
-            document.getElementById('phoneNumber').value = '';
-            document.getElementById('profileFullName').value = '';
-            
-            alert('✅ با موفقیت خارج شدید.');
-        }
-
-        // ========== Scroll Functions ==========
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        // ========== Load Members from Supabase ==========
-        async function loadMembers() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('members')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if(error) {
-                    throw error;
-                }
-
-                members = data || [];
-                updateMembersList();
-                updateExpenseForms();
-                console.log('👥 Loaded members:', members);
-                
-            } catch(error) {
-                console.error('Error loading members:', error);
-                members = [];
-            }
-        }
-
-        // ========== Update Members List UI ==========
-        function updateMembersList() {
-            const membersList = document.getElementById('members-list');
-            membersList.innerHTML = '';
-
-            if(members.length === 0) {
-                membersList.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">هیچ فردی در گروه وجود ندارد</p>';
-                return;
-            }
-
-            members.forEach(member => {
-                const memberDiv = document.createElement('div');
-                memberDiv.className = 'bg-white p-3 rounded-lg shadow flex justify-between items-center border-l-3 border-blue-500';
-                memberDiv.innerHTML = `
-                    <div>
-                        <span class="font-semibold text-gray-800 text-sm">${member.name}</span>
-                    </div>
-                `;
-                membersList.appendChild(memberDiv);
-            });
-        }
-
-        // ========== Add Shared Expense ==========
-        async function addSharedExpense() {
-            const memberSelect = document.getElementById('shared-expense-member');
-            const amountInput = document.getElementById('shared-expense-amount');
-            const descriptionInput = document.getElementById('shared-expense-description');
-
-            const memberId = parseInt(memberSelect.value);
-            const amount = parseInt(amountInput.value);
-            const description = descriptionInput.value.trim();
-
-            if(!memberId || !amount) {
-                alert('⚠️ لطفا تمام فیلدها را پر کنید');
-                return;
-            }
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from('expenses')
-                    .insert([{ 
-                        member_id: memberId, 
-                        amount: amount,
-                        description: description,
-                        is_shared: true,
-                        user_id: currentUserId
-                    }])
-                    .select();
-
-                if(error) {
-                    throw error;
-                }
-
-                memberSelect.value = '';
-                amountInput.value = '';
-                descriptionInput.value = '';
-                
-                await loadSharedExpenses();
-                updateSharedExpensesList();
-                updateSummary();
-                
-                alert('✅ هزینه اشتراکی با موفقیت ثبت شد!');
-                
-            } catch(error) {
-                console.error('Error adding shared expense:', error);
-                alert('❌ خطا در ثبت هزینه: ' + error.message);
-            }
-        }
-
-        // ========== Load Shared Expenses from Supabase ==========
-        async function loadSharedExpenses() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('expenses')
-                    .select('*')
-                    .eq('is_shared', true)
-                    .order('created_at', { ascending: false });
-
-                if(error) {
-                    throw error;
-                }
-
-                sharedExpenses = data || [];
-                updateSharedExpensesList();
-                console.log('💰 Loaded shared expenses:', sharedExpenses);
-                
-            } catch(error) {
-                console.error('Error loading shared expenses:', error);
-                sharedExpenses = [];
-            }
-        }
-
-        // ========== Update Shared Expenses List UI ==========
-        function updateSharedExpensesList() {
-            const expensesList = document.getElementById('shared-expenses-list');
-            expensesList.innerHTML = '';
-
-            if(sharedExpenses.length === 0) {
-                expensesList.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">هیچ هزینه‌ای ثبت نشده است</p>';
-                return;
-            }
-
-            sharedExpenses.forEach(expense => {
-                const member = members.find(m => m.id === expense.member_id);
-                const expenseDiv = document.createElement('div');
-                expenseDiv.className = 'bg-white p-3 rounded-lg shadow border-l-3 border-green-500';
-                expenseDiv.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="font-semibold text-gray-800 text-sm">${member ? member.name : 'نامشخص'}</span>
-                            <p class="text-gray-600 mt-1 text-xs">${expense.description || 'بدون توضیحات'}</p>
-                        </div>
-                        <div class="text-left">
-                            <span class="font-bold text-green-600 text-sm">${expense.amount.toLocaleString()} تومان</span>
-                            <p class="text-xs text-gray-500 mt-1">${new Date(expense.created_at).toLocaleDateString('fa-IR')}</p>
-                        </div>
-                    </div>
-                `;
-                expensesList.appendChild(expenseDiv);
-            });
-        }
-
-        // ========== Add Personal Expense ==========
-        async function addPersonalExpense() {
-            const amountInput = document.getElementById('personal-expense-amount');
-            const descriptionInput = document.getElementById('personal-expense-description');
-
-            const amount = parseInt(amountInput.value);
-            const description = descriptionInput.value.trim();
-
-            if(!amount) {
-                alert('⚠️ لطفا مبلغ را وارد کنید');
-                return;
-            }
-
-            try {
-                const currentUserMember = currentUser.member;
-                
-                if (!currentUserMember) {
-                    alert('⚠️ شما در لیست افراد گروه وجود ندارید. لطفاً ابتدا پروفایل خود را تکمیل کنید.');
-                    return;
-                }
-
-                const { data, error } = await supabaseClient
-                    .from('expenses')
-                    .insert([{ 
-                        member_id: currentUserMember.id,
-                        amount: amount,
-                        description: description,
-                        is_shared: false,
-                        user_id: currentUserId
-                    }])
-                    .select();
-
-                if(error) {
-                    throw error;
-                }
-
-                amountInput.value = '';
-                descriptionInput.value = '';
-                
-                await loadPersonalExpenses();
-                updatePersonalExpensesList();
-                updateSummary();
-                
-                alert('✅ هزینه شخصی با موفقیت ثبت شد!');
-                
-            } catch(error) {
-                console.error('Error adding personal expense:', error);
-                alert('❌ خطا در ثبت هزینه: ' + error.message);
-            }
-        }
-
-        // ========== Load Personal Expenses from Supabase ==========
-        async function loadPersonalExpenses() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('expenses')
-                    .select('*')
-                    .eq('is_shared', false)
-                    .eq('user_id', currentUserId)
-                    .order('created_at', { ascending: false });
-
-                if(error) {
-                    throw error;
-                }
-
-                personalExpenses = data || [];
-                updatePersonalExpensesList();
-                console.log('💰 Loaded personal expenses:', personalExpenses);
-                
-            } catch(error) {
-                console.error('Error loading personal expenses:', error);
-                personalExpenses = [];
-            }
-        }
-
-        // ========== Update Personal Expenses List UI ==========
-        function updatePersonalExpensesList() {
-            const expensesList = document.getElementById('personal-expenses-list');
-            expensesList.innerHTML = '';
-
-            if(personalExpenses.length === 0) {
-                expensesList.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">هیچ هزینه‌ای ثبت نشده است</p>';
-                return;
-            }
-
-            personalExpenses.forEach(expense => {
-                const expenseDiv = document.createElement('div');
-                expenseDiv.className = 'bg-white p-3 rounded-lg shadow border-l-3 border-orange-500';
-                expenseDiv.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="font-semibold text-gray-800 text-sm">هزینه شخصی</span>
-                            <p class="text-gray-600 mt-1 text-xs">${expense.description || 'بدون توضیحات'}</p>
-                        </div>
-                        <div class="text-left">
-                            <span class="font-bold text-orange-600 text-sm">${expense.amount.toLocaleString()} تومان</span>
-                            <p class="text-xs text-gray-500 mt-1">${new Date(expense.created_at).toLocaleDateString('fa-IR')}</p>
-                        </div>
-                    </div>
-                `;
-                expensesList.appendChild(expenseDiv);
-            });
-        }
-
-        // ========== Update Expense Forms ==========
-        function updateExpenseForms() {
-            const sharedMemberSelect = document.getElementById('shared-expense-member');
-            
-            sharedMemberSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
-
-            members.forEach(member => {
-                const sharedOption = document.createElement('option');
-                sharedOption.value = member.id;
-                sharedOption.textContent = member.name;
-                sharedMemberSelect.appendChild(sharedOption);
-            });
-        }
-
-        // ========== Update Summary ==========
-        function updateSummary() {
-            const totalShared = sharedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            const totalPersonal = personalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            const totalTravel = totalShared + totalPersonal;
-            const totalMembersCount = members.length;
-
-            document.getElementById('total-shared-expenses').textContent = totalShared.toLocaleString() + ' تومان';
-            document.getElementById('total-personal-expenses').textContent = totalPersonal.toLocaleString() + ' تومان';
-            document.getElementById('total-travel-expenses').textContent = totalTravel.toLocaleString() + ' تومان';
-            document.getElementById('total-members').textContent = totalMembersCount + ' نفر';
-
-            // Update member details
-            const memberDetails = document.getElementById('member-details');
-            memberDetails.innerHTML = '';
-
-            if(members.length === 0) {
-                memberDetails.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">هیچ فردی برای نمایش وجود ندارد</p>';
-                return;
-            }
-
-            members.forEach(member => {
-                const memberSharedExpenses = sharedExpenses.filter(e => e.member_id === member.id);
-                const totalSharedSpent = memberSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
-                const sharedCount = memberSharedExpenses.length;
-
-                const isCurrentUser = member.national_code === currentUser.national_code;
-                let totalPersonalSpent = 0;
-                let personalCount = 0;
-                
-                if (isCurrentUser) {
-                    const memberPersonalExpenses = personalExpenses.filter(e => e.member_id === member.id);
-                    totalPersonalSpent = memberPersonalExpenses.reduce((sum, e) => sum + e.amount, 0);
-                    personalCount = memberPersonalExpenses.length;
-                }
-
-                const totalSpent = totalSharedSpent + totalPersonalSpent;
-
-                const detailDiv = document.createElement('div');
-                detailDiv.className = 'bg-white p-4 rounded-lg shadow border-l-3 ' + 
-                    (isCurrentUser ? 'border-blue-500' : 'border-gray-300');
-                detailDiv.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-semibold text-gray-800 text-lg">${member.name}</span>
-                        <span class="font-bold ${isCurrentUser ? 'text-blue-600' : 'text-gray-600'}">${totalSpent.toLocaleString()} تومان</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-2">
-                        <div>
-                            <span class="text-xs">هزینه‌های اشتراکی:</span>
-                            <span class="font-semibold text-green-600 block">${totalSharedSpent.toLocaleString()} تومان</span>
-                            <span class="text-xs">(${sharedCount} هزینه)</span>
-                        </div>
-                        ${isCurrentUser ? `
-                        <div>
-                            <span class="text-xs">هزینه‌های شخصی:</span>
-                            <span class="font-semibold text-orange-600 block">${totalPersonalSpent.toLocaleString()} تومان</span>
-                            <span class="text-xs">(${personalCount} هزینه)</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    ${isCurrentUser ? '<p class="text-xs text-blue-500">این شما هستید 👤</p>' : ''}
-                `;
-                memberDetails.appendChild(detailDiv);
-            });
-        }
-
-        // ========== Initialize on page load ==========
-        window.onload = initApp;
-
-        // ========== Global functions ==========
-        window.scrollToSection = scrollToSection;
-        window.login = login;
-        window.logout = logout;
-        window.addSharedExpense = addSharedExpense;
-        window.addPersonalExpense = addPersonalExpense;
-        window.validateNationalCode = validateNationalCode;
-        window.validatePhoneNumber = validatePhoneNumber;
-        window.completeProfile = completeProfile;
-    </script>
+<!-- Header -->
+<header class="bg-white shadow-md sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2 space-x-reverse">
+<svg class="h-7 w-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+<span class="text-lg font-bold text-gray-800">مدیریت هزینه‌های سفر</span>
+</div>
+<div id="userInfo" class="hidden">
+<span id="userName" class="text-gray-700 font-semibold text-sm"></span>
+<button onclick="logout()" class="bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition text-xs mr-2">
+خروج
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Login Section - Always shown first -->
+<section id="login-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="bg-white rounded-xl shadow-lg p-5 max-w-md mx-auto animate-fade-in">
+<h2 class="text-xl font-bold text-gray-800 mb-5 text-center flex items-center justify-center">
+<svg class="h-6 w-6 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+</svg>
+ورود به سیستم
+</h2>
+<div class="space-y-3">
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">کد ملی</label>
+<input type="text" id="nationalCode" placeholder="مثال: 0012345678"
+class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm compact-input"
+maxlength="10" oninput="validateNationalCode(this)">
+<p id="nationalCodeError" class="text-red-500 text-xs mt-1 hidden">کد ملی باید 10 رقم باشد</p>
+</div>
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">شماره موبایل</label>
+<input type="tel" id="phoneNumber" placeholder="مثال: 09123456789"
+class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm compact-input"
+maxlength="11" oninput="validatePhoneNumber(this)">
+<p id="phoneNumberError" class="text-red-500 text-xs mt-1 hidden">شماره موبایل باید 11 رقم باشد و با 09 شروع شود</p>
+</div>
+<button onclick="login()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition font-semibold text-sm">
+<svg class="inline-block h-4 w-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+</svg>
+ورود / ثبت‌نام
+</button>
+<p class="text-xs text-gray-600 text-center mt-3">
+<strong>💡 توضیح:</strong> با ورود، شما به هزینه‌های اشتراکی همه دسترسی دارید، اما هزینه‌های شخصی فقط خودتان را می‌بینید.
+</p>
+</div>
+</div>
+</section>
+<!-- Profile Completion Modal (Shown after first login) -->
+<div id="profileModal" class="hidden modal-overlay">
+<div class="modal-content">
+<h2 class="text-xl font-bold text-gray-800 mb-3 text-center">تکمیل پروفایل شما 👤</h2>
+<p class="text-gray-600 mb-4 text-center text-sm">لطفاً اطلاعات خود را برای اضافه شدن به گروه وارد کنید</p>
+<div class="space-y-3">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1.5">نام و نام خانوادگی</label>
+<input type="text" id="profileFullName" placeholder="مثال: علی رضایی"
+class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm compact-input">
+</div>
+<button onclick="completeProfile()" class="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 transition font-semibold text-sm">
+<svg class="inline-block h-4 w-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+</svg>
+تکمیل و ورود به سیستم
+</button>
+</div>
+</div>
+</div>
+<!-- Edit Expense Modal -->
+<div id="editExpenseModal" class="hidden edit-modal">
+<div class="edit-modal-content">
+<h2 id="editModalTitle" class="text-xl font-bold text-gray-800 mb-3 text-center">ویرایش هزینه</h2>
+<div class="space-y-3">
+<input type="hidden" id="editExpenseId">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1.5">مبلغ هزینه (تومان)</label>
+<input
+  type="text"
+  id="editExpenseAmount"
+  placeholder="مثال: 150,000"
+  inputmode="numeric"
+  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm compact-input"
+/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1.5">توضیحات</label>
+<input type="text" id="editExpenseDescription" placeholder="مثال: هتل، غذا، بنزین" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm compact-input">
+</div>
+<div id="editMemberSelectContainer" class="hidden">
+<label class="block text-sm font-medium text-gray-700 mb-1.5">انتخاب فرد</label>
+<select id="editExpenseMember" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm compact-input">
+<option value="">انتخاب کنید...</option>
+</select>
+</div>
+<div class="flex gap-2">
+<button onclick="saveExpenseEdit()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold text-sm">
+<svg class="inline-block h-4 w-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+</svg>
+ذخیره تغییرات
+</button>
+<button onclick="closeEditModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition font-semibold text-sm">
+لغو
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content (Hidden until login and profile completion) -->
+<main id="main-content" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<!-- Members Section -->
+<section id="members" class="compact-section">
+<div class="bg-white rounded-xl shadow-md p-4 compact-card">
+<h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+<svg class="h-5 w-5 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+</svg>
+افراد گروه
+</h2>
+<div class="bg-blue-50 rounded-lg p-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-2">لیست اعضا</h3>
+<div id="members-list" class="space-y-2 max-h-60 overflow-y-auto">
+<!-- Members will be added here dynamically -->
+</div>
+</div>
+</div>
+</section>
+<!-- Shared Expenses Section -->
+<section id="shared-expenses" class="compact-section">
+<div class="bg-white rounded-xl shadow-md p-4 compact-card">
+<h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+<svg class="h-5 w-5 text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+هزینه‌های اشتراکی (برای همه قابل مشاهده)
+</h2>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+<div class="bg-green-50 rounded-lg p-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-3">ثبت هزینه اشتراکی جدید</h3>
+<div class="space-y-3">
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">انتخاب فرد</label>
+<select id="shared-expense-member" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm compact-input">
+<option value="">انتخاب کنید...</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">مبلغ هزینه (تومان)</label>
+<input
+  type="text"
+  id="shared-expense-amount"
+  placeholder="مثال: 150,000"
+  inputmode="numeric"
+  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm compact-input"
+/>
+</div>
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">توضیحات</label>
+<input type="text" id="shared-expense-description" placeholder="مثال: هتل، غذا، بنزین" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm compact-input">
+</div>
+<button onclick="addSharedExpense()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold text-sm">
+<svg class="inline-block h-4 w-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+</svg>
+ثبت هزینه اشتراکی
+</button>
+</div>
+</div>
+<div class="bg-purple-50 rounded-lg p-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-3">تاریخچه هزینه‌های اشتراکی</h3>
+<div id="shared-expenses-list" class="space-y-2 max-h-60 overflow-y-auto">
+<!-- Shared expenses will be added here dynamically -->
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Personal Expenses Section -->
+<section id="personal-expenses" class="compact-section">
+<div class="bg-white rounded-xl shadow-md p-4 compact-card">
+<h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+<svg class="h-5 w-5 text-orange-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+</svg>
+هزینه‌های شخصی (فقط خودتان)
+</h2>
+<p class="text-xs text-gray-600 mb-3 bg-orange-50 p-2 rounded-lg">
+<strong>🔒 حریم خصوصی:</strong> هزینه‌های شخصی فقط برای شما قابل مشاهده است و دیگران نمی‌توانند آن‌ها را ببینند.
+</p>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+<div class="bg-orange-50 rounded-lg p-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-3">ثبت هزینه شخصی جدید</h3>
+<div class="space-y-3">
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">مبلغ هزینه (تومان)</label>
+<input
+  type="text"
+  id="personal-expense-amount"
+  placeholder="مثال: 50,000"
+  inputmode="numeric"
+  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm compact-input"
+/>
+</div>
+<div>
+<label class="block text-xs font-medium text-gray-700 mb-1.5">توضیحات</label>
+<input type="text" id="personal-expense-description" placeholder="مثال: هدیه، خرید شخصی" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm compact-input">
+</div>
+<button onclick="addPersonalExpense()" class="w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition font-semibold text-sm">
+<svg class="inline-block h-4 w-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+</svg>
+ثبت هزینه شخصی
+</button>
+</div>
+</div>
+<div class="bg-red-50 rounded-lg p-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-3">تاریخچه هزینه‌های شخصی</h3>
+<div id="personal-expenses-list" class="space-y-2 max-h-60 overflow-y-auto">
+<!-- Personal expenses will be added here dynamically -->
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Summary Section -->
+<section id="summary" class="compact-section">
+<div class="bg-white rounded-xl shadow-md p-4 compact-card">
+<h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+<svg class="h-5 w-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+</svg>
+خلاصه و محاسبات
+</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+<div class="bg-blue-100 rounded-lg p-3 text-center border border-blue-200">
+<h3 class="text-xs font-semibold text-gray-800 mb-0.5">مجموع هزینه‌های اشتراکی</h3>
+<p id="total-shared-expenses" class="text-lg font-bold text-blue-600">0 تومان</p>
+</div>
+<div class="bg-orange-100 rounded-lg p-3 text-center border border-orange-200">
+<h3 class="text-xs font-semibold text-gray-800 mb-0.5">هزینه‌های شخصی شما</h3>
+<p id="total-personal-expenses" class="text-lg font-bold text-orange-600">0 تومان</p>
+</div>
+<div class="bg-purple-100 rounded-lg p-3 text-center border border-purple-200">
+<h3 class="text-xs font-semibold text-gray-800 mb-0.5">هزینه کل سفر</h3>
+<p id="total-travel-expenses" class="text-lg font-bold text-purple-600">0 تومان</p>
+</div>
+<div class="bg-green-100 rounded-lg p-3 text-center border border-green-200">
+<h3 class="text-xs font-semibold text-gray-800 mb-0.5">تعداد افراد</h3>
+<p id="total-members" class="text-lg font-bold text-green-600">0 نفر</p>
+</div>
+</div>
+<div class="bg-yellow-50 rounded-lg p-3 mb-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-2">📊 میانگین و بدهی‌ها</h3>
+<div id="average-section" class="space-y-1.5">
+<p class="text-xs text-gray-700"><strong>میانگین هزینه اشتراکی هر نفر:</strong> <span id="average-per-person" class="font-bold text-green-600">0 تومان</span></p>
+<p class="text-xs text-gray-700"><strong>شما باید بپردازید:</strong> <span id="you-should-pay" class="font-bold text-red-600">0 تومان</span></p>
+<p class="text-xs text-gray-700"><strong>شما باید بگیرید:</strong> <span id="you-should-receive" class="font-bold text-green-600">0 تومان</span></p></div>
+</div>
+<div class="bg-gray-50 rounded-lg p-3">
+<h3 class="text-sm font-semibold text-gray-800 mb-2">جزئیات هزینه‌های هر فرد</h3>
+<div id="member-details" class="space-y-2 max-h-80 overflow-y-auto">
+<!-- Member details will be added here dynamically -->
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button for Mobile -->
+<button onclick="scrollToSection('summary')" class="floating-btn bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg hidden" id="floatingBtn">
+📊 خلاصه
+</button>
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-4 mt-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+<p class="text-gray-400 text-xs">© 2026 مدیریت هزینه‌های سفر. تمامی حقوق محفوظ است.</p>
+<p class="text-gray-400 text-xs mt-1">طراحی شده با ❤️ با استفاده از Tailwind CSS و Supabase</p>
+</div>
+</footer>
+<script>
+// ========== Supabase Configuration ==========
+const SUPABASE_URL = 'https://mrjcfehwyzvaojvrkpmd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xrBrdAGjo1R-cRtCX07acw_wdVidDMl';
+// Initialize Supabase Client
+let supabaseClient = null;
+let currentUser = null;
+let currentUserId = null;
+let isProfileComplete = false;
+let editingExpense = null;
+function initSupabase() {
+try {
+if (typeof supabase === 'undefined') {
+console.warn('Supabase library not loaded');
+return false;
+}
+supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+console.log('✅ Supabase client initialized successfully');
+return true;
+} catch (error) {
+console.error('❌ Error initializing Supabase:', error);
+return false;
+}
+}
+// ========== Data Storage ==========
+let members = [];
+let sharedExpenses = [];
+let personalExpenses = [];
+// ========== Initialize the app ==========
+async function initApp() {
+console.log('🚀 Initializing app...');
+if (!initSupabase()) {
+alert('❌ خطای اتصال به دیتابیس. لطفاً دوباره تلاش کنید.');
+return;
+}
+// همیشه اول صفحه لاگین نمایش داده میشه
+document.getElementById('login-section').classList.remove('hidden');
+document.getElementById('main-content').classList.add('hidden');
+document.getElementById('userInfo').classList.add('hidden');
+document.getElementById('floatingBtn').classList.add('hidden');
+console.log('✅ App initialized successfully!');
+}
+// ========== Validation Functions ==========
+function validateNationalCode(input) {
+const value = input.value;
+const errorElement = input.id === 'nationalCode' ?
+document.getElementById('nationalCodeError') :
+document.getElementById('memberNationalCodeError');
+if (value.length > 0 && value.length !== 10) {
+errorElement.classList.remove('hidden');
+return false;
+} else {
+errorElement.classList.add('hidden');
+return true;
+}
+}
+function validatePhoneNumber(input) {
+const value = input.value;
+const errorElement = document.getElementById('phoneNumberError');
+if (value.length > 0 && (value.length !== 11 || !value.startsWith('09'))) {
+errorElement.classList.remove('hidden');
+return false;
+} else {
+errorElement.classList.add('hidden');
+return true;
+}
+}
+// ========== Check if user profile is complete ==========
+async function checkProfileCompletion() {
+try {
+const { data: memberData, error: memberError } = await supabaseClient
+.from('members')
+.select('*')
+.eq('national_code', currentUser.national_code)
+.single();
+if (memberError && memberError.code === 'PGRST116') {
+// کاربر در جدول members وجود ندارد - نیاز به تکمیل پروفایل دارد
+isProfileComplete = false;
+showProfileModal();
+} else if (memberError) {
+throw memberError;
+} else {
+// کاربر در جدول members وجود دارد
+isProfileComplete = true;
+currentUser.member = memberData;
+loadMainContent();
+}
+} catch (error) {
+console.error('Error checking profile completion:', error);
+alert('❌ خطا در بررسی پروفایل: ' + error.message);
+}
+}
+// ========== Show Profile Completion Modal ==========
+function showProfileModal() {
+document.getElementById('profileModal').classList.remove('hidden');
+}
+// ========== Complete Profile ==========
+async function completeProfile() {
+const fullName = document.getElementById('profileFullName').value.trim();
+if (!fullName) {
+alert('⚠️ لطفاً نام و نام خانوادگی خود را وارد کنید');
+return;
+}
+try {
+// اضافه کردن کاربر به جدول members
+const { data: memberData, error: memberError } = await supabaseClient
+.from('members')
+.insert([{
+name: fullName,
+national_code: currentUser.national_code
+}])
+.select()
+.single();
+if (memberError) {
+throw memberError;
+}
+// آپدیت کردن نام کاربر در جدول users
+await supabaseClient
+.from('users')
+.update({ name: fullName })
+.eq('id', currentUserId);
+currentUser.name = fullName;
+currentUser.member = memberData;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+isProfileComplete = true;
+document.getElementById('profileModal').classList.add('hidden');
+// بارگذاری محتوای اصلی
+loadMainContent();
+alert('✅ پروفایل شما با موفقیت تکمیل شد! خوش آمدید.');
+} catch (error) {
+console.error('Error completing profile:', error);
+alert('❌ خطا در تکمیل پروفایل: ' + error.message);
+}
+}
+// ========== Load Main Content ==========
+async function loadMainContent() {
+document.getElementById('userName').textContent = currentUser.name;
+document.getElementById('userInfo').classList.remove('hidden');
+document.getElementById('main-content').classList.remove('hidden');
+document.getElementById('floatingBtn').classList.remove('hidden');
+document.getElementById('login-section').classList.add('hidden');
+// بارگذاری داده‌ها
+await loadMembers();
+await loadSharedExpenses();
+await loadPersonalExpenses();
+updateSummary();
+}
+// ========== Login Function ==========
+async function login() {
+const nationalCode = document.getElementById('nationalCode').value.trim();
+const phoneNumber = document.getElementById('phoneNumber').value.trim();
+if (!validateNationalCode({value: nationalCode, id: 'nationalCode'})) {
+alert('⚠️ کد ملی باید 10 رقم باشد');
+return;
+}
+if (!validatePhoneNumber({value: phoneNumber, id: 'phoneNumber'})) {
+alert('⚠️ شماره موبایل باید 11 رقم باشد و با 09 شروع شود');
+return;
+}
+try {
+const { data: existingUser, error: fetchError } = await supabaseClient
+.from('users')
+.select('*')
+.eq('national_code', nationalCode)
+.eq('phone_number', phoneNumber)
+.single();
+if (fetchError && fetchError.code !== 'PGRST116') {
+throw fetchError;
+}
+if (existingUser) {
+// کاربر موجود است
+currentUser = existingUser;
+currentUserId = currentUser.id;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+// چک کردن تکمیل پروفایل
+await checkProfileCompletion();
+} else {
+// کاربر جدید - ثبت‌نام
+const { data: newUser, error: insertError } = await supabaseClient
+.from('users')
+.insert([{
+national_code: nationalCode,
+phone_number: phoneNumber,
+name: 'کاربر ' + nationalCode.substring(0, 4)
+}])
+.select()
+.single();
+if (insertError) {
+throw insertError;
+}
+currentUser = newUser;
+currentUserId = currentUser.id;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+// چک کردن تکمیل پروفایل (برای کاربر جدید حتماً نیاز به تکمیل دارد)
+await checkProfileCompletion();
+}
+} catch(error) {
+console.error('Error in login:', error);
+alert('❌ خطا در ورود: ' + error.message);
+}
+}
+// ========== Logout Function ==========
+function logout() {
+currentUser = null;
+currentUserId = null;
+isProfileComplete = false;
+localStorage.removeItem('currentUser');
+document.getElementById('userInfo').classList.add('hidden');
+document.getElementById('login-section').classList.remove('hidden');
+document.getElementById('main-content').classList.add('hidden');
+document.getElementById('floatingBtn').classList.add('hidden');
+document.getElementById('profileModal').classList.add('hidden');
+document.getElementById('editExpenseModal').classList.add('hidden');
+// Clear forms
+document.getElementById('nationalCode').value = '';
+document.getElementById('phoneNumber').value = '';
+document.getElementById('profileFullName').value = '';
+alert('✅ با موفقیت خارج شدید.');
+}
+// ========== Scroll Functions ==========
+function scrollToSection(sectionId) {
+const section = document.getElementById(sectionId);
+if (section) {
+section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+}
+// ========== Load Members from Supabase ==========
+async function loadMembers() {
+try {
+const { data, error } = await supabaseClient
+.from('members')
+.select('*')
+.order('created_at', { ascending: true });
+if(error) {
+throw error;
+}
+members = data || [];
+updateMembersList();
+updateExpenseForms();
+console.log('👥 Loaded members:', members);
+} catch(error) {
+console.error('Error loading members:', error);
+members = [];
+}
+}
+// ========== Update Members List UI ==========
+function updateMembersList() {
+const membersList = document.getElementById('members-list');
+membersList.innerHTML = '';
+if(members.length === 0) {
+membersList.innerHTML = '<p class="text-gray-500 text-center py-2 text-xs">هیچ فردی در گروه وجود ندارد</p>';
+return;
+}
+members.forEach(member => {
+const isCurrentUser = member.national_code === currentUser.national_code;
+const memberDiv = document.createElement('div');
+memberDiv.className = `bg-white p-2 rounded-lg shadow-sm flex justify-between items-center ${isCurrentUser ? 'border-l-3 border-blue-500 bg-blue-50' : 'border-l-3 border-gray-300'}`;
+memberDiv.innerHTML = `
+<div class="flex items-center gap-2">
+<span class="font-semibold text-gray-800 text-xs">${member.name}</span>
+${isCurrentUser ? '<span class="text-blue-600 text-xs font-bold">👤 شما</span>' : ''}
+</div>
+`;
+membersList.appendChild(memberDiv);
+});
+}
+// ========== Add Shared Expense ==========
+async function addSharedExpense() {
+const memberSelect = document.getElementById('shared-expense-member');
+const amountInput = document.getElementById('shared-expense-amount');
+const descriptionInput = document.getElementById('shared-expense-description');
+const memberId = parseInt(memberSelect.value);
+const amount = parseCurrencyString(amountInput.value);
+const description = descriptionInput.value.trim();
+if(!memberId || !amount) {
+alert('⚠️ لطفا تمام فیلدها را پر کنید');
+return;
+}
+try {
+const { data, error } = await supabaseClient
+.from('expenses')
+.insert([{
+member_id: memberId,
+amount: amount,
+description: description,
+is_shared: true,
+user_id: currentUserId
+}])
+.select();
+if(error) {
+throw error;
+}
+memberSelect.value = '';
+amountInput.value = '';
+descriptionInput.value = '';
+await loadSharedExpenses();
+updateSharedExpensesList();
+updateSummary();
+alert('✅ هزینه اشتراکی با موفقیت ثبت شد!');
+} catch(error) {
+console.error('Error adding shared expense:', error);
+alert('❌ خطا در ثبت هزینه: ' + error.message);
+}
+}
+// ========== Load Shared Expenses from Supabase ==========
+async function loadSharedExpenses() {
+try {
+const { data, error } = await supabaseClient
+.from('expenses')
+.select('*')
+.eq('is_shared', true)
+.order('created_at', { ascending: false });
+if(error) {
+throw error;
+}
+sharedExpenses = data || [];
+updateSharedExpensesList();
+console.log('💰 Loaded shared expenses:', sharedExpenses);
+} catch(error) {
+console.error('Error loading shared expenses:', error);
+sharedExpenses = [];
+}
+}
+// ========== Update Shared Expenses List UI ==========
+function updateSharedExpensesList() {
+const expensesList = document.getElementById('shared-expenses-list');
+expensesList.innerHTML = '';
+if(sharedExpenses.length === 0) {
+expensesList.innerHTML = '<p class="text-gray-500 text-center py-2 text-xs">هیچ هزینه‌ای ثبت نشده است</p>';
+return;
+}
+sharedExpenses.forEach(expense => {
+const member = members.find(m => m.id === expense.member_id);
+const canEdit = expense.user_id === currentUserId;
+const expenseDiv = document.createElement('div');
+expenseDiv.className = 'bg-white p-2 rounded-lg shadow-sm border-l-3 border-green-500';
+expenseDiv.innerHTML = `
+<div class="flex justify-between items-start mb-1">
+<div class="flex-1">
+<span class="font-semibold text-gray-800 text-xs">${member ? member.name : 'نامشخص'}</span>
+<p class="text-gray-600 mt-0.5 text-xs">${expense.description || 'بدون توضیحات'}</p>
+</div>
+<div class="text-left">
+<span class="font-bold text-green-600 text-xs">${expense.amount.toLocaleString()} تومان</span>
+<p class="text-xs text-gray-500 mt-0.5">${new Date(expense.created_at).toLocaleDateString('fa-IR')}</p>
+</div>
+</div>
+${canEdit ? `
+<div class="flex gap-1.5 mt-2 pt-2 border-t border-gray-100">
+<button onclick="openEditModal(${expense.id}, ${expense.amount}, '${expense.description.replace(/'/g, "\\'")}', ${expense.member_id}, true)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+ویرایش
+</button>
+<button onclick="deleteExpense(${expense.id}, true)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+حذف
+</button>
+</div>
+` : ''}
+`;
+expensesList.appendChild(expenseDiv);
+});
+}
+// ========== Add Personal Expense ==========
+async function addPersonalExpense() {
+const amountInput = document.getElementById('personal-expense-amount');
+const descriptionInput = document.getElementById('personal-expense-description');
+const amount = parseCurrencyString(amountInput.value);
+const description = descriptionInput.value.trim();
+if(!amount) {
+alert('⚠️ لطفا مبلغ را وارد کنید');
+return;
+}
+try {
+const currentUserMember = currentUser.member;
+if (!currentUserMember) {
+alert('⚠️ شما در لیست افراد گروه وجود ندارید. لطفاً ابتدا پروفایل خود را تکمیل کنید.');
+return;
+}
+const { data, error } = await supabaseClient
+.from('expenses')
+.insert([{
+member_id: currentUserMember.id,
+amount: amount,
+description: description,
+is_shared: false,
+user_id: currentUserId
+}])
+.select();
+if(error) {
+throw error;
+}
+amountInput.value = '';
+descriptionInput.value = '';
+await loadPersonalExpenses();
+updatePersonalExpensesList();
+updateSummary();
+alert('✅ هزینه شخصی با موفقیت ثبت شد!');
+} catch(error) {
+console.error('Error adding personal expense:', error);
+alert('❌ خطا در ثبت هزینه: ' + error.message);
+}
+}
+// ========== Load Personal Expenses from Supabase ==========
+async function loadPersonalExpenses() {
+try {
+const { data, error } = await supabaseClient
+.from('expenses')
+.select('*')
+.eq('is_shared', false)
+.eq('user_id', currentUserId)
+.order('created_at', { ascending: false });
+if(error) {
+throw error;
+}
+personalExpenses = data || [];
+updatePersonalExpensesList();
+console.log('💰 Loaded personal expenses:', personalExpenses);
+} catch(error) {
+console.error('Error loading personal expenses:', error);
+personalExpenses = [];
+}
+}
+// ========== Update Personal Expenses List UI ==========
+function updatePersonalExpensesList() {
+const expensesList = document.getElementById('personal-expenses-list');
+expensesList.innerHTML = '';
+if(personalExpenses.length === 0) {
+expensesList.innerHTML = '<p class="text-gray-500 text-center py-2 text-xs">هیچ هزینه‌ای ثبت نشده است</p>';
+return;
+}
+personalExpenses.forEach(expense => {
+const expenseDiv = document.createElement('div');
+expenseDiv.className = 'bg-white p-2 rounded-lg shadow-sm border-l-3 border-orange-500';
+expenseDiv.innerHTML = `
+<div class="flex justify-between items-start mb-1">
+<div class="flex-1">
+<span class="font-semibold text-gray-800 text-xs">هزینه شخصی</span>
+<p class="text-gray-600 mt-0.5 text-xs">${expense.description || 'بدون توضیحات'}</p>
+</div>
+<div class="text-left">
+<span class="font-bold text-orange-600 text-xs">${expense.amount.toLocaleString()} تومان</span>
+<p class="text-xs text-gray-500 mt-0.5">${new Date(expense.created_at).toLocaleDateString('fa-IR')}</p>
+</div>
+</div>
+<div class="flex gap-1.5 mt-2 pt-2 border-t border-gray-100">
+<button onclick="openEditModal(${expense.id}, ${expense.amount}, '${expense.description.replace(/'/g, "\\'")}', ${expense.member_id}, false)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+ویرایش
+</button>
+<button onclick="deleteExpense(${expense.id}, false)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+حذف
+</button>
+</div>
+`;
+expensesList.appendChild(expenseDiv);
+});
+}
+// ========== Update Expense Forms ==========
+function updateExpenseForms() {
+const sharedMemberSelect = document.getElementById('shared-expense-member');
+const editMemberSelect = document.getElementById('editExpenseMember');
+sharedMemberSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+editMemberSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+members.forEach(member => {
+const sharedOption = document.createElement('option');
+sharedOption.value = member.id;
+sharedOption.textContent = member.name;
+sharedMemberSelect.appendChild(sharedOption);
+const editOption = document.createElement('option');
+editOption.value = member.id;
+editOption.textContent = member.name;
+editMemberSelect.appendChild(editOption);
+});
+}
+// ========== Open Edit Modal ==========
+function openEditModal(id, amount, description, memberId, isShared) {
+editingExpense = { id, isShared };
+document.getElementById('editExpenseId').value = id;
+document.getElementById('editExpenseAmount').value = amount != null ? amount.toLocaleString() : '';
+document.getElementById('editExpenseDescription').value = description;
+document.getElementById('editModalTitle').textContent = isShared ? 'ویرایش هزینه اشتراکی' : 'ویرایش هزینه شخصی';
+if (isShared) {
+document.getElementById('editMemberSelectContainer').classList.remove('hidden');
+document.getElementById('editExpenseMember').value = memberId;
+} else {
+document.getElementById('editMemberSelectContainer').classList.add('hidden');
+}
+document.getElementById('editExpenseModal').classList.remove('hidden');
+}
+// ========== Close Edit Modal ==========
+function closeEditModal() {
+document.getElementById('editExpenseModal').classList.add('hidden');
+editingExpense = null;
+}
+// ========== Save Expense Edit ==========
+async function saveExpenseEdit() {
+const id = document.getElementById('editExpenseId').value;
+const amount = parseCurrencyString(document.getElementById('editExpenseAmount').value);
+const description = document.getElementById('editExpenseDescription').value.trim();
+const isShared = editingExpense.isShared;
+if (!amount) {
+alert('⚠️ لطفاً مبلغ را وارد کنید');
+return;
+}
+try {
+let updateData = {
+amount: amount,
+description: description
+};
+if (isShared) {
+const memberId = parseInt(document.getElementById('editExpenseMember').value);
+if (!memberId) {
+alert('⚠️ لطفاً فرد را انتخاب کنید');
+return;
+}
+updateData.member_id = memberId;
+}
+const { error } = await supabaseClient
+.from('expenses')
+.update(updateData)
+.eq('id', id);
+if (error) {
+throw error;
+}
+closeEditModal();
+if (isShared) {
+await loadSharedExpenses();
+updateSharedExpensesList();
+} else {
+await loadPersonalExpenses();
+updatePersonalExpensesList();
+}
+updateSummary();
+alert('✅ هزینه با موفقیت ویرایش شد!');
+} catch (error) {
+console.error('Error updating expense:', error);
+alert('❌ خطا در ویرایش هزینه: ' + error.message);
+}
+}
+// ========== Delete Expense ==========
+async function deleteExpense(id, isShared) {
+if (!confirm('آیا مطمئن هستید که می‌خواهید این هزینه را حذف کنید؟')) {
+return;
+}
+try {
+const { error } = await supabaseClient
+.from('expenses')
+.delete()
+.eq('id', id);
+if (error) {
+throw error;
+}
+if (isShared) {
+await loadSharedExpenses();
+updateSharedExpensesList();
+} else {
+await loadPersonalExpenses();
+updatePersonalExpensesList();
+}
+updateSummary();
+alert('✅ هزینه با موفقیت حذف شد!');
+} catch (error) {
+console.error('Error deleting expense:', error);
+alert('❌ خطا در حذف هزینه: ' + error.message);
+}
+}
+// ========== Update Summary ==========
+function updateSummary() {
+const totalShared = sharedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+const totalPersonal = personalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+const totalTravel = totalShared + totalPersonal;
+const totalMembersCount = members.length;
+document.getElementById('total-shared-expenses').textContent = totalShared.toLocaleString() + ' تومان';
+document.getElementById('total-personal-expenses').textContent = totalPersonal.toLocaleString() + ' تومان';
+document.getElementById('total-travel-expenses').textContent = totalTravel.toLocaleString() + ' تومان';
+document.getElementById('total-members').textContent = totalMembersCount + ' نفر';
+// محاسبه میانگین و بدهی‌ها
+let averagePerPerson = 0;
+let youShouldPay = 0;
+let youShouldReceive = 0;
+if (totalMembersCount > 0 && sharedExpenses.length > 0) {
+averagePerPerson = Math.round(totalShared / totalMembersCount);
+const currentUserMember = currentUser.member;
+if (currentUserMember) {
+const currentUserSharedExpenses = sharedExpenses.filter(e => e.member_id === currentUserMember.id);
+const currentUserPaid = currentUserSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
+const difference = currentUserPaid - averagePerPerson;
+if (difference < 0) {
+youShouldPay = Math.abs(difference);
+youShouldReceive = 0;
+} else {
+youShouldPay = 0;
+youShouldReceive = difference;
+}
+}
+}
+document.getElementById('average-per-person').textContent = averagePerPerson.toLocaleString() + ' تومان';
+document.getElementById('you-should-pay').textContent = youShouldPay.toLocaleString() + ' تومان';
+document.getElementById('you-should-receive').textContent = youShouldReceive.toLocaleString() + ' تومان';
+// Update member details
+const memberDetails = document.getElementById('member-details');
+memberDetails.innerHTML = '';
+if(members.length === 0) {
+memberDetails.innerHTML = '<p class="text-gray-500 text-center py-2 text-xs">هیچ فردی برای نمایش وجود ندارد</p>';
+return;
+}
+members.forEach(member => {
+const memberSharedExpenses = sharedExpenses.filter(e => e.member_id === member.id);
+const totalSharedSpent = memberSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
+const sharedCount = memberSharedExpenses.length;
+const isCurrentUser = member.national_code === currentUser.national_code;
+let totalPersonalSpent = 0;
+let personalCount = 0;
+if (isCurrentUser) {
+const memberPersonalExpenses = personalExpenses.filter(e => e.member_id === member.id);
+totalPersonalSpent = memberPersonalExpenses.reduce((sum, e) => sum + e.amount, 0);
+personalCount = memberPersonalExpenses.length;
+}
+const totalSpent = totalSharedSpent + totalPersonalSpent;
+const detailDiv = document.createElement('div');
+detailDiv.className = `bg-white p-3 rounded-lg shadow-sm border-l-3 ${isCurrentUser ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`;
+detailDiv.innerHTML = `
+<div class="flex justify-between items-center mb-1.5">
+<span class="font-semibold text-gray-800 text-sm">${member.name}${isCurrentUser ? ' 👤' : ''}</span>
+<span class="font-bold ${isCurrentUser ? 'text-blue-600' : 'text-gray-600'}">${totalSpent.toLocaleString()} تومان</span>
+</div>
+<div class="grid grid-cols-2 gap-1.5 text-xs text-gray-600 mb-1.5">
+<div>
+<span class="text-xs">هزینه‌های اشتراکی:</span>
+<span class="font-semibold text-green-600 block">${totalSharedSpent.toLocaleString()} تومان</span>
+<span class="text-xs">(${sharedCount} هزینه)</span>
+</div>
+${isCurrentUser ? `
+<div>
+<span class="text-xs">هزینه‌های شخصی:</span>
+<span class="font-semibold text-orange-600 block">${totalPersonalSpent.toLocaleString()} تومان</span>
+<span class="text-xs">(${personalCount} هزینه)</span>
+</div>
+` : ''}
+</div>
+${isCurrentUser ? `<p class="text-xs text-blue-600 font-semibold">این شما هستید</p>` : ''}
+`;
+memberDetails.appendChild(detailDiv);
+});
+}
+// ========== Initialize on page load ==========
+window.onload = initApp;
+// ========== Global functions ==========
+window.scrollToSection = scrollToSection;
+window.login = login;
+window.logout = logout;
+window.addSharedExpense = addSharedExpense;
+window.addPersonalExpense = addPersonalExpense;
+window.validateNationalCode = validateNationalCode;
+window.validatePhoneNumber = validatePhoneNumber;
+window.completeProfile = completeProfile;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.saveExpenseEdit = saveExpenseEdit;
+window.deleteExpense = deleteExpense;
+// ========= currency helpers =========
+function formatWithCommas(value) {
+  if (value == null) return '';
+  // حذف همه غیر عددها
+  const onlyDigits = String(value).replace(/\D/g, '');
+  if (onlyDigits === '') return '';
+  return onlyDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function parseCurrencyString(str) {
+  if (!str) return 0;
+  const n = parseInt(String(str).replace(/,/g, '').replace(/\D/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function attachCurrencyFormatter(inputId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  // هنگام تایپ: فقط ارقام نگه دار و فرمت کن
+  el.addEventListener('input', (e) => {
+    const pos = e.target.selectionStart;
+    const beforeLen = e.target.value.length;
+    let formatted = formatWithCommas(e.target.value);
+    e.target.value = formatted;
+    // تلاش برای نگه داشتن کرسر (ساده)
+    const afterLen = formatted.length;
+    const diff = afterLen - beforeLen;
+    try {
+      e.target.setSelectionRange(pos + diff, pos + diff);
+    } catch (err) {}
+  });
+  // هنگام خروج از فیلد می‌تونیم کاری اضافه انجام بدیم اگر خواستی
+}
+
+// وصل کردن به ۳ input
+['shared-expense-amount', 'personal-expense-amount', 'editExpenseAmount'].forEach(attachCurrencyFormatter);
+
+</script>
 </body>
 </html>
