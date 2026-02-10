@@ -1066,94 +1066,320 @@ alert('❌ خطا در حذف هزینه: ' + error.message);
 }
 // ========== Update Summary ==========
 function updateSummary() {
-  const totalShared = sharedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const totalPersonal = personalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const totalMembersCount = members.length;
-
-  // محاسبه میانگین اشتراکی هر نفر (برای استفاده در total-travel و نمایش میانگین)
-  let averagePerPerson = 0;
-  if (totalMembersCount > 0 && sharedExpenses.length > 0) {
-    averagePerPerson = Math.round(totalShared / totalMembersCount);
-  }
-
-  // هزینه کل سفر برای شما — برای "شما": میانگین اشتراکی هر نفر + هزینه‌های شخصی شما
-  const totalTravelForYou = averagePerPerson + totalPersonal;
-
-  // نمایش مقادیر
-  document.getElementById('total-shared-expenses').textContent = totalShared.toLocaleString() + ' تومان';
-  document.getElementById('total-personal-expenses').textContent = totalPersonal.toLocaleString() + ' تومان';
-  document.getElementById('total-travel-expenses').textContent = totalTravelForYou.toLocaleString() + ' تومان';
-  document.getElementById('total-members').textContent = totalMembersCount + ' نفر';
-
-  // محاسبه میانگین و بدهی‌ها (باقی منطق توی کدت را همین‌جا نگه داشتم)
-  let youShouldPay = 0;
-  let youShouldReceive = 0;
-  if (totalMembersCount > 0 && sharedExpenses.length > 0) {
-    // averagePerPerson همین‌جاست و استفاده می‌شود
-    const currentUserMember = currentUser.member;
-    if (currentUserMember) {
-      const currentUserSharedExpenses = sharedExpenses.filter(e => e.member_id === currentUserMember.id);
-      const currentUserPaid = currentUserSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
-      const difference = currentUserPaid - averagePerPerson;
-      if (difference < 0) {
-        youShouldPay = Math.abs(difference);
-        youShouldReceive = 0;
-      } else {
-        youShouldPay = 0;
-        youShouldReceive = difference;
-      }
+    const totalShared = sharedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalPersonal = personalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalMembersCount = members.length;
+    
+    // محاسبه میانگین اشتراکی هر نفر
+    let averagePerPerson = 0;
+    if (totalMembersCount > 0 && sharedExpenses.length > 0) {
+        averagePerPerson = Math.round(totalShared / totalMembersCount);
     }
-  }
-
-  document.getElementById('average-per-person').textContent = averagePerPerson.toLocaleString() + ' تومان';
-  document.getElementById('you-should-pay').textContent = youShouldPay.toLocaleString() + ' تومان';
-  document.getElementById('you-should-receive').textContent = youShouldReceive.toLocaleString() + ' تومان';
-
-// Update member details
-const memberDetails = document.getElementById('member-details');
-memberDetails.innerHTML = '';
-if(members.length === 0) {
-memberDetails.innerHTML = '<p class="text-gray-500 text-center py-2 text-xs">هیچ فردی برای نمایش وجود ندارد</p>';
-return;
-}
-members.forEach(member => {
-const memberSharedExpenses = sharedExpenses.filter(e => e.member_id === member.id);
-const totalSharedSpent = memberSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
-const sharedCount = memberSharedExpenses.length;
-const isCurrentUser = member.national_code === currentUser.national_code;
-let totalPersonalSpent = 0;
-let personalCount = 0;
-if (isCurrentUser) {
-const memberPersonalExpenses = personalExpenses.filter(e => e.member_id === member.id);
-totalPersonalSpent = memberPersonalExpenses.reduce((sum, e) => sum + e.amount, 0);
-personalCount = memberPersonalExpenses.length;
-}
-const totalSpent = totalSharedSpent + totalPersonalSpent;
-const detailDiv = document.createElement('div');
-detailDiv.className = `bg-white p-3 rounded-lg shadow-sm border-l-3 ${isCurrentUser ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`;
-detailDiv.innerHTML = `
-<div class="flex justify-between items-center mb-1.5">
-<span class="font-semibold text-gray-800 text-sm">${member.name}${isCurrentUser ? ' 👤' : ''}</span>
-<span class="font-bold ${isCurrentUser ? 'text-blue-600' : 'text-gray-600'}">${totalSpent.toLocaleString()} تومان</span>
-</div>
-<div class="grid grid-cols-2 gap-1.5 text-xs text-gray-600 mb-1.5">
-<div>
-<span class="text-xs">هزینه‌های اشتراکی:</span>
-<span class="font-semibold text-green-600 block">${totalSharedSpent.toLocaleString()} تومان</span>
-<span class="text-xs">(${sharedCount} هزینه)</span>
-</div>
-${isCurrentUser ? `
-<div>
-<span class="text-xs">هزینه‌های شخصی:</span>
-<span class="font-semibold text-orange-600 block">${totalPersonalSpent.toLocaleString()} تومان</span>
-<span class="text-xs">(${personalCount} هزینه)</span>
-</div>
-` : ''}
-</div>
-${isCurrentUser ? `<p class="text-xs text-blue-600 font-semibold">این شما هستید</p>` : ''}
-`;
-memberDetails.appendChild(detailDiv);
-});
+    
+    // هزینه کل سفر برای شما
+    const totalTravelForYou = averagePerPerson + totalPersonal;
+    
+    // نمایش مقادیر
+    document.getElementById('total-shared-expenses').textContent = totalShared.toLocaleString() + ' تومان';
+    document.getElementById('total-personal-expenses').textContent = totalPersonal.toLocaleString() + ' تومان';
+    document.getElementById('total-travel-expenses').textContent = totalTravelForYou.toLocaleString() + ' تومان';
+    document.getElementById('total-members').textContent = totalMembersCount + ' نفر';
+    
+    // محاسبه میانگین و بدهی‌ها
+    let youShouldPay = 0;
+    let youShouldReceive = 0;
+    if (totalMembersCount > 0 && sharedExpenses.length > 0) {
+        const currentUserMember = currentUser.member;
+        if (currentUserMember) {
+            const currentUserSharedExpenses = sharedExpenses.filter(e => e.member_id === currentUserMember.id);
+            const currentUserPaid = currentUserSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
+            const difference = currentUserPaid - averagePerPerson;
+            if (difference < 0) {
+                youShouldPay = Math.abs(difference);
+                youShouldReceive = 0;
+            } else {
+                youShouldPay = 0;
+                youShouldReceive = difference;
+            }
+        }
+    }
+    document.getElementById('average-per-person').textContent = averagePerPerson.toLocaleString() + ' تومان';
+    document.getElementById('you-should-pay').textContent = youShouldPay.toLocaleString() + ' تومان';
+    document.getElementById('you-should-receive').textContent = youShouldReceive.toLocaleString() + ' تومان';
+    
+    // ==================== محاسبه تسویه حساب بهینه ====================
+    const memberBalances = {};
+    const totalSharedAmount = sharedExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const avgPerPerson = totalSharedAmount / totalMembersCount;
+    
+    members.forEach(member => {
+        const memberExpenses = sharedExpenses.filter(e => e.member_id === member.id);
+        const totalPaid = memberExpenses.reduce((sum, e) => sum + e.amount, 0);
+        let balance = Math.round(totalPaid - avgPerPerson);
+        memberBalances[member.id] = {
+            name: member.name,
+            balance: balance,
+            isCurrentUser: member.national_code === currentUser.national_code
+        };
+    });
+    
+    // اصلاح خطای گرد کردن
+    let totalBalance = Object.values(memberBalances).reduce((sum, mb) => sum + mb.balance, 0);
+    if (totalBalance !== 0) {
+        const membersArray = Object.entries(memberBalances).sort((a, b) => 
+            Math.abs(b[1].balance) - Math.abs(a[1].balance)
+        );
+        if (membersArray.length > 0) {
+            const [id] = membersArray[0];
+            memberBalances[id].balance -= totalBalance;
+        }
+    }
+    
+    // جدا کردن بدهکاران و طلبکاران
+    const debtors = Object.entries(memberBalances)
+        .filter(([id, data]) => data.balance < 0)
+        .map(([id, data]) => ({ 
+            id, 
+            name: data.name, 
+            amount: Math.abs(data.balance),
+            isCurrentUser: data.isCurrentUser 
+        }))
+        .sort((a, b) => a.amount - b.amount);
+    
+    const creditors = Object.entries(memberBalances)
+        .filter(([id, data]) => data.balance > 0)
+        .map(([id, data]) => ({ 
+            id, 
+            name: data.name, 
+            amount: data.balance,
+            isCurrentUser: data.isCurrentUser 
+        }))
+        .sort((a, b) => b.amount - a.amount);
+    
+    // محاسبه تراکنش‌های بهینه
+    const transactions = [];
+    let dIndex = 0, cIndex = 0;
+    const debtorsWorking = JSON.parse(JSON.stringify(debtors));
+    const creditorsWorking = JSON.parse(JSON.stringify(creditors));
+    
+    while (dIndex < debtorsWorking.length && cIndex < creditorsWorking.length) {
+        const debtor = debtorsWorking[dIndex];
+        const creditor = creditorsWorking[cIndex];
+        
+        const amount = Math.min(debtor.amount, creditor.amount);
+        if (amount <= 0) break;
+        
+        transactions.push({
+            from: debtor.name,
+            fromId: debtor.id,
+            to: creditor.name,
+            toId: creditor.id,
+            amount: amount,
+            fromCurrentUser: debtor.isCurrentUser,
+            toCurrentUser: creditor.isCurrentUser
+        });
+        
+        debtor.amount -= amount;
+        creditor.amount -= amount;
+        
+        if (debtor.amount < 1) dIndex++;
+        if (creditor.amount < 1) cIndex++;
+    }
+    
+    // ساخت ساختار داده برای نمایش به هر فرد
+    const memberSettlements = {};
+    members.forEach(member => {
+        memberSettlements[member.id] = {
+            shouldPay: [],
+            shouldReceive: [],
+            netBalance: memberBalances[member.id].balance
+        };
+    });
+    
+    transactions.forEach(tx => {
+        memberSettlements[tx.fromId].shouldPay.push({
+            to: tx.to,
+            amount: tx.amount,
+            toId: tx.toId
+        });
+        memberSettlements[tx.toId].shouldReceive.push({
+            from: tx.from,
+            amount: tx.amount,
+            fromId: tx.fromId
+        });
+    });
+    
+    // ==================== Update member details با طراحی جدید و تمیزتر ====================
+    const memberDetails = document.getElementById('member-details');
+    memberDetails.innerHTML = '';
+    
+    if(members.length === 0) {
+        memberDetails.innerHTML = '<p class="text-gray-500 text-center py-3 text-sm">هیچ فردی برای نمایش وجود ندارد</p>';
+        return;
+    }
+    
+    members.forEach(member => {
+        const memberSharedExpenses = sharedExpenses.filter(e => e.member_id === member.id);
+        const totalSharedSpent = memberSharedExpenses.reduce((sum, e) => sum + e.amount, 0);
+        const sharedCount = memberSharedExpenses.length;
+        const isCurrentUser = member.national_code === currentUser.national_code;
+        
+        let totalPersonalSpent = 0;
+        let personalCount = 0;
+        if (isCurrentUser) {
+            const memberPersonalExpenses = personalExpenses.filter(e => e.member_id === member.id);
+            totalPersonalSpent = memberPersonalExpenses.reduce((sum, e) => sum + e.amount, 0);
+            personalCount = memberPersonalExpenses.length;
+        }
+        
+        const totalSpent = totalSharedSpent + totalPersonalSpent;
+        const balance = memberBalances[member.id].balance;
+        const settlements = memberSettlements[member.id];
+        
+        // تعیین رنگ بر اساس بدهی/طلب
+        let balanceColor = 'text-gray-600';
+        let balanceBg = 'bg-gray-50';
+        let borderLeft = 'border-l-4 border-gray-300';
+        let balanceIcon = '➖';
+        let balanceLabel = 'برابر';
+        
+        if (balance > 0) {
+            balanceColor = 'text-green-700';
+            balanceBg = 'bg-green-50';
+            borderLeft = 'border-l-4 border-green-500';
+            balanceIcon = '➕';
+            balanceLabel = 'طلبکار';
+        } else if (balance < 0) {
+            balanceColor = 'text-red-700';
+            balanceBg = 'bg-red-50';
+            borderLeft = 'border-l-4 border-red-500';
+            balanceIcon = '➖';
+            balanceLabel = 'بدهکار';
+        }
+        
+        const detailDiv = document.createElement('div');
+        detailDiv.className = `bg-white rounded-xl shadow-sm ${borderLeft} overflow-hidden transition-all hover:shadow-md`;
+        
+        // تعیین رنگ برای نمایش کلی هزینه
+        let totalSpentColor = isCurrentUser ? 'text-blue-600' : 'text-gray-700';
+        
+        let settlementsHtml = '';
+        
+        // نمایش بدهی‌ها و طلب‌ها فقط اگر وجود داشته باشد
+        if (settlements.shouldPay.length > 0 || settlements.shouldReceive.length > 0) {
+            settlementsHtml += '<div class="space-y-2 mt-2 pt-2 border-t border-dashed border-gray-200">';
+            
+            // اگر باید پول بدهد
+            if (settlements.shouldPay.length > 0) {
+                settlementsHtml += '<div>';
+                settlementsHtml += '<div class="flex items-center gap-1.5 mb-1.5">';
+                settlementsHtml += '<svg class="h-3.5 w-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+                settlementsHtml += '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+                settlementsHtml += '</svg>';
+                settlementsHtml += '<span class="text-xs font-bold text-red-700">باید بپردازد:</span>';
+                settlementsHtml += '</div>';
+                settlementsHtml += '<div class="space-y-1.5">';
+                settlements.shouldPay.forEach(pay => {
+                    const isToCurrentUser = pay.toId && members.find(m => m.id === pay.toId)?.national_code === currentUser.national_code;
+                    settlementsHtml += `<div class="flex items-center justify-between bg-white/70 p-2 rounded-lg">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs text-gray-600">→ ${pay.to}${isToCurrentUser ? ' 👤' : ''}</span>
+                        </div>
+                        <span class="font-bold text-red-600 text-sm">${pay.amount.toLocaleString()} تومان</span>
+                    </div>`;
+                });
+                settlementsHtml += '</div>';
+                settlementsHtml += '</div>';
+            }
+            
+            // اگر باید پول بگیرد
+            if (settlements.shouldReceive.length > 0) {
+                settlementsHtml += '<div>';
+                settlementsHtml += '<div class="flex items-center gap-1.5 mb-1.5">';
+                settlementsHtml += '<svg class="h-3.5 w-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+                settlementsHtml += '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+                settlementsHtml += '</svg>';
+                settlementsHtml += '<span class="text-xs font-bold text-green-700">باید دریافت کند:</span>';
+                settlementsHtml += '</div>';
+                settlementsHtml += '<div class="space-y-1.5">';
+                settlements.shouldReceive.forEach(receive => {
+                    const isFromCurrentUser = receive.fromId && members.find(m => m.id === receive.fromId)?.national_code === currentUser.national_code;
+                    settlementsHtml += `<div class="flex items-center justify-between bg-white/70 p-2 rounded-lg">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs text-gray-600">← ${receive.from}${isFromCurrentUser ? ' 👤' : ''}</span>
+                        </div>
+                        <span class="font-bold text-green-600 text-sm">${receive.amount.toLocaleString()} تومان</span>
+                    </div>`;
+                });
+                settlementsHtml += '</div>';
+                settlementsHtml += '</div>';
+            }
+            
+            settlementsHtml += '</div>';
+        }
+        
+        detailDiv.innerHTML = `
+        <div class="p-3">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-gray-800 text-sm">${member.name}</span>
+                    ${isCurrentUser ? '<span class="text-blue-600 text-xs font-bold bg-blue-100 px-2 py-0.5 rounded">شما</span>' : ''}
+                    <span class="text-xs ${balanceColor} font-semibold flex items-center gap-0.5">
+                        <span>${balanceIcon}</span>
+                        <span>${balanceLabel}</span>
+                    </span>
+                </div>
+                <div class="text-right">
+                    <span class="font-bold ${totalSpentColor} block text-base">${totalSpent.toLocaleString()}</span>
+                    <span class="text-xs text-gray-500">تومان</span>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <div class="bg-white p-2 rounded-lg border border-gray-200">
+                    <div class="text-center">
+                        <span class="text-[10px] text-gray-500 block">اشتراکی</span>
+                        <span class="font-bold text-green-600 block text-sm">${totalSharedSpent.toLocaleString()}</span>
+                        <span class="text-[10px] text-gray-400 block">${sharedCount} هزینه</span>
+                    </div>
+                </div>
+                ${isCurrentUser ? `
+                <div class="bg-white p-2 rounded-lg border border-gray-200">
+                    <div class="text-center">
+                        <span class="text-[10px] text-gray-500 block">شخصی</span>
+                        <span class="font-bold text-orange-600 block text-sm">${totalPersonalSpent.toLocaleString()}</span>
+                        <span class="text-[10px] text-gray-400 block">${personalCount} هزینه</span>
+                    </div>
+                </div>
+                ` : `
+                <div class="bg-white p-2 rounded-lg border border-gray-200">
+                    <div class="text-center">
+                        <span class="text-[10px] text-gray-500 block">میانگین</span>
+                        <span class="font-bold text-purple-600 block text-sm">${Math.round(avgPerPerson).toLocaleString()}</span>
+                        <span class="text-[10px] text-gray-400 block">تومان</span>
+                    </div>
+                </div>
+                `}
+            </div>
+            
+            <!-- Balance Card -->
+            <div class="bg-white rounded-lg p-2.5 border ${balance > 0 ? 'border-green-200' : balance < 0 ? 'border-red-200' : 'border-gray-200'}">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold ${balanceColor}">تراز مالی:</span>
+                    <span class="font-bold ${balance > 0 ? 'text-green-700' : balance < 0 ? 'text-red-700' : 'text-gray-600'} text-sm">
+                        ${balance >= 0 ? '+' : ''}${balance.toLocaleString()} تومان
+                    </span>
+                </div>
+            </div>
+            
+            ${settlementsHtml}
+        </div>
+        `;
+        
+        memberDetails.appendChild(detailDiv);
+    });
 }
 // ========== Initialize on page load ==========
 window.onload = initApp;
